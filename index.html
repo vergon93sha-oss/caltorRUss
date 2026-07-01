@@ -1,574 +1,86 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Калькулятор конвертации по выручке</title>
-  
-  <!-- Подключение Tailwind CSS для стилей -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Шрифт Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Загрузка React, ReactDOM и Babel -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    /* Плавная стилизация ползунков для тач-экранов телефонов */
-    input[type="range"]::-webkit-slider-thumb {
-      background: #0091ea;
-      border: 2px solid #ffffff;
-      border-radius: 9999px;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      -webkit-appearance: none;
-      box-shadow: 0 4px 10px rgba(0, 145, 234, 0.4);
-    }
-    input[type="range"]::-moz-range-thumb {
-      background: #0091ea;
-      border: 2px solid #ffffff;
-      border-radius: 9999px;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 145, 234, 0.4);
-    }
-  </style>
-</head>
-<body class="bg-gradient-to-b from-[#e0f2fe] via-[#f8fafc] to-[#f1f5f9] min-h-screen text-[#1e293b]">
+import React, { useState, useMemo } from 'react';
 
-  <div id="root"></div>
+const App = () => {
+  const [investment, setInvestment] = useState(15000000);
+  const maxInvestment = 30000000;
+  const minInvestment = 100000;
 
-  <script type="text/babel">
-    const { useState, useMemo } = React;
+  const passiveIncome = useMemo(() => Math.round(investment * 0.33), [investment]);
+  const revenueM12 = useMemo(() => Math.round((investment / 5000000) * 85000000), [investment]);
 
-    // Автономные SVG-иконки для корректной работы офлайн на любом телефоне
-    const CalculatorIcon = () => (
-      <svg className="h-7 w-7 md:h-9 md:w-9 text-[#e0f2fe]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    );
-
-    const CoinsIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-
-    const TrendingUpIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    );
-
-    const HelpIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-
-    const PercentIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-
-    const FileTextIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    );
-
-    const CheckIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-      </svg>
-    );
-
-    const AlertIcon = ({ className }) => (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-    );
-
-    // Стилизованное облако (SVG)
-    const SoftCloud = ({ className = "", style = {} }) => (
-      <svg 
-        viewBox="0 0 120 80" 
-        className={`${className} fill-current drop-shadow-[0_8px_16px_rgba(255,255,255,0.45)]`}
-        style={style}
-      >
-        <path d="M20,60 C15,60 10,55 10,48 C10,40 18,34 26,35 C28,24 38,15 50,15 C60,15 69,22 72,31 C76,28 82,26 88,26 C98,26 106,34 106,44 C111,45 115,50 115,56 C115,62 110,67 104,67 L20,67 Z" />
-      </svg>
-    );
-
-    // Функция поиска Наибольшего Общего Делителя
-    const gcd = (a, b) => {
-      a = Math.abs(Math.round(a));
-      b = Math.abs(Math.round(b));
-      while (b) {
-        const t = b;
-        b = a % b;
-        a = t;
-      }
-      return a;
-    };
-
-    function App() {
-      // Инициализация дефолтных параметров (из ТЗ)
-      const [loanAmount, setLoanAmount] = useState(10);
-      const [revenue, setRevenue] = useState(100);
-      const [multiplier, setMultiplier] = useState(4);
-      const [discount, setDiscount] = useState(50);
-      const [initialCapital, setInitialCapital] = useState(10000);
-
-      const calculations = useMemo(() => {
-        // 1. Расчет знаменателя
-        const discountFactor = 1 - discount / 100;
-        const denominatorValue = revenue * multiplier * discountFactor;
+  return (
+    <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans text-slate-900">
+      <div className="max-w-6xl mx-auto space-y-10">
         
-        // Доля инвестора (десятичная)
-        const investorShareDecimal = denominatorValue > 0 ? loanAmount / denominatorValue : 0;
+        {/* Заголовок секции */}
+        <div className="mb-4">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Симулятор доходности</h1>
+          <p className="text-lg text-slate-600 mt-2">Интерактивный Инвестиционный Калькулятор</p>
+        </div>
 
-        // Перевод в простую дробь
-        const rawNumerator = Math.round(loanAmount * 100);
-        const rawDenominator = Math.round(revenue * multiplier * (1 - discount / 100) * 100);
-        
-        let shareNum = 0;
-        let shareDen = 0;
-        
-        if (rawDenominator > 0) {
-          const commonDivisor = gcd(rawNumerator, rawDenominator);
-          shareNum = rawNumerator / commonDivisor;
-          shareDen = rawDenominator / commonDivisor;
-        }
-
-        const isOverLimit = investorShareDecimal >= 1;
-
-        // 2. Расчет номинальной стоимости доли
-        const nominalNum = initialCapital * shareNum;
-        const nominalDen = shareDen - shareNum;
-
-        let nominalValue = 0;
-        if (nominalDen > 0) {
-          nominalValue = nominalNum / nominalDen;
-        }
-
-        // 3. Расчет увеличенного уставного капитала
-        const totalCapitalNum = initialCapital * shareDen;
-        const totalCapitalDen = shareDen - shareNum;
-        
-        let totalCapitalValue = 0;
-        if (totalCapitalDen > 0) {
-          totalCapitalValue = totalCapitalNum / totalCapitalDen;
-        }
-
-        // Перевод копеек в целые числа без запятых
-        const nominalKopecks = Math.round(nominalValue * 100);
-        const totalCapitalKopecks = Math.round(totalCapitalValue * 100);
-
-        return {
-          denominatorValue,
-          investorShareDecimal,
-          shareNum,
-          shareDen,
-          nominalValue,
-          totalCapitalValue,
-          nominalKopecks,
-          totalCapitalKopecks,
-          isOverLimit
-        };
-      }, [loanAmount, revenue, multiplier, discount, initialCapital]);
-
-      const formatCurrency = (val, digits = 2) => {
-        return new Intl.NumberFormat('ru-RU', {
-          style: 'decimal',
-          minimumFractionDigits: digits,
-          maximumFractionDigits: digits,
-        }).format(val);
-      };
-
-      return (
-        <div className="pb-16">
-          {/* НЕБЕСНЫЙ БАННЕР С ОБЛАКАМИ */}
-          <div className="relative w-full h-56 bg-gradient-to-r from-[#22a6f2] via-[#0091ea] to-[#0277bd] overflow-hidden shadow-lg border-b border-sky-100 z-10">
-            <SoftCloud className="absolute text-white/20 w-32 h-auto top-6 left-12 animate-pulse" style={{ animationDuration: '4s' }} />
-            <SoftCloud className="absolute text-white/35 w-52 h-auto -bottom-4 right-16" />
-            <SoftCloud className="absolute text-white/15 w-44 h-auto top-4 right-1/4 animate-pulse" style={{ animationDuration: '6s' }} />
-            <SoftCloud className="absolute text-white/25 w-60 h-auto bottom-2 left-1/3" />
-            <SoftCloud className="absolute text-white/10 w-28 h-auto top-16 left-1/4" />
-
-            <div className="max-w-6xl mx-auto px-4 h-full flex items-center relative z-10">
-              <div className="text-white w-full">
-                <h1 className="text-xl md:text-3xl font-black tracking-tight flex items-center gap-2.5 drop-shadow-sm">
-                  <CalculatorIcon />
-                  Калькулятор конвертации по выручке
-                </h1>
-                <p className="text-[#e0f2fe]/95 mt-2 text-xs md:text-sm max-w-2xl font-medium leading-relaxed drop-shadow-sm">
-                  Точный расчет долей и номинальной стоимости для ФНС без дробных погрешностей, округлений и чисел в периоде.
-                </p>
-              </div>
+        {/* Основной блок калькулятора */}
+        <div className="bg-white p-10 rounded-3xl shadow-lg border border-slate-200">
+          <div className="mb-12">
+            <label className="text-xl font-bold block mb-6">Сумма Ваших инвестиций:</label>
+            <div className="text-5xl font-black text-blue-600 mb-8">{investment.toLocaleString()} ₽</div>
+            <input 
+              type="range" 
+              min={minInvestment} 
+              max={maxInvestment} 
+              step={100000}
+              value={investment} 
+              onChange={(e) => setInvestment(Number(e.target.value))}
+              className="w-full h-4 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 hover:accent-blue-700 transition-all"
+            />
+            <div className="flex justify-between text-base font-medium text-slate-500 mt-4">
+              <span>{minInvestment.toLocaleString()} ₽</span>
+              <span>{maxInvestment.toLocaleString()} ₽</span>
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-[#f8fafc]/50 to-transparent"></div>
           </div>
 
-          {/* ОСНОВНОЙ КОНТЕНТ */}
-          <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-20">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
-              {/* Левая колонка - Входные параметры */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-xl shadow-sky-900/5 space-y-6">
-                  <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-50">
-                    <span className="w-1.5 h-4 bg-[#0091ea] rounded-full inline-block"></span>
-                    Входные данные
-                  </h2>
-
-                  {/* Сумма займа */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Сумма займа</span>
-                      <span className="text-[#0091ea] font-black text-sm">{loanAmount} млн ₽</span>
-                    </div>
-                    <div className="flex items-center gap-4 bg-[#f0f9ff]/60 p-3 rounded-2xl border border-sky-50 focus-within:border-sky-400 focus-within:bg-white transition-all">
-                      <CoinsIcon className="h-5 w-5 text-sky-500 shrink-0" />
-                      <input 
-                        type="range" 
-                        min="1" 
-                        max="100" 
-                        step="0.5"
-                        value={loanAmount} 
-                        onChange={(e) => setLoanAmount(parseFloat(e.target.value) || 0)}
-                        className="w-full accent-[#0091ea] h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <input
-                        type="number"
-                        value={loanAmount}
-                        onChange={(e) => setLoanAmount(parseFloat(e.target.value) || 0)}
-                        className="w-20 bg-white text-slate-900 font-bold text-right px-2 py-1 rounded-lg text-sm border border-sky-200 focus:outline-none focus:border-sky-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Выручка */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Выручка (строка 2110)</span>
-                      <span className="text-blue-700 font-black text-sm">{revenue} млн ₽</span>
-                    </div>
-                    <div className="flex items-center gap-4 bg-[#f0f9ff]/60 p-3 rounded-2xl border border-sky-50 focus-within:border-sky-400 focus-within:bg-white transition-all">
-                      <TrendingUpIcon className="h-5 w-5 text-blue-600 shrink-0" />
-                      <input 
-                        type="range" 
-                        min="10" 
-                        max="1000" 
-                        step="5"
-                        value={revenue} 
-                        onChange={(e) => setRevenue(parseFloat(e.target.value) || 0)}
-                        className="w-full accent-blue-600 h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <input
-                        type="number"
-                        value={revenue}
-                        onChange={(e) => setRevenue(parseFloat(e.target.value) || 0)}
-                        className="w-20 bg-white text-slate-900 font-bold text-right px-2 py-1 rounded-lg text-sm border border-sky-200 focus:outline-none focus:border-sky-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Мультипликатор */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Мультипликатор</span>
-                      <span className="text-slate-700 font-black text-sm">x {multiplier}</span>
-                    </div>
-                    <div className="flex items-center gap-4 bg-[#f0f9ff]/60 p-3 rounded-2xl border border-sky-50 focus-within:border-sky-400 focus-within:bg-white transition-all">
-                      <HelpIcon className="h-5 w-5 text-slate-400 shrink-0" />
-                      <input 
-                        type="range" 
-                        min="1" 
-                        max="10" 
-                        step="0.1"
-                        value={multiplier} 
-                        onChange={(e) => setMultiplier(parseFloat(e.target.value) || 0)}
-                        className="w-full accent-slate-600 h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <input
-                        type="number"
-                        value={multiplier}
-                        step="0.1"
-                        onChange={(e) => setMultiplier(parseFloat(e.target.value) || 0)}
-                        className="w-20 bg-white text-slate-900 font-bold text-right px-2 py-1 rounded-lg text-sm border border-sky-200 focus:outline-none focus:border-sky-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Скидка */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Скидка инвестора</span>
-                      <span className="text-[#0091ea] font-black text-sm">{discount}%</span>
-                    </div>
-                    <div className="flex items-center gap-4 bg-[#f0f9ff]/60 p-3 rounded-2xl border border-sky-100 focus-within:border-sky-400 focus-within:bg-white transition-all">
-                      <PercentIcon className="h-5 w-5 text-sky-500 shrink-0" />
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="90" 
-                        step="5"
-                        value={discount} 
-                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                        className="w-full accent-sky-500 h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <input
-                        type="number"
-                        value={discount}
-                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                        className="w-20 bg-white text-slate-900 font-bold text-right px-2 py-1 rounded-lg text-sm border border-sky-200 focus:outline-none focus:border-sky-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Уставный капитал */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                      Начальный уставный капитал
-                    </label>
-                    <div className="flex items-center gap-3 bg-[#f0f9ff]/60 p-3.5 rounded-2xl border border-sky-50 focus-within:border-sky-400 focus-within:bg-white transition-all">
-                      <FileTextIcon className="h-5 w-5 text-[#0091ea] shrink-0" />
-                      <input 
-                        type="number" 
-                        value={initialCapital} 
-                        onChange={(e) => setInitialCapital(parseInt(e.target.value) || 0)}
-                        className="w-full bg-transparent text-slate-900 text-lg font-black focus:outline-none text-right"
-                        placeholder="Например, 10000"
-                      />
-                      <span className="text-slate-400 font-bold text-sm">руб.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Правая колонка - Результаты расчетов */}
-              <div className="lg:col-span-7 space-y-6">
-                {calculations.isOverLimit && (
-                  <div className="bg-rose-50 border border-rose-100 text-rose-950 p-4 rounded-3xl flex items-start gap-3">
-                    <AlertIcon className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-extrabold text-sm">Превышен лимит доли!</p>
-                      <p className="text-xs text-rose-700 mt-1">
-                        Рассчитанная доля превышает 100%. Пожалуйста, уменьшите сумму займа или увеличьте показатели компании.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-[#0277bd] to-[#0091ea] text-white rounded-[2rem] p-6 shadow-xl shadow-sky-900/10 relative overflow-hidden">
-                    <div className="absolute right-4 bottom-4 opacity-10 pointer-events-none">
-                      <PercentIcon className="h-24 w-24 text-white" />
-                    </div>
-                    <p className="text-xs font-bold text-sky-100 uppercase tracking-wider">Доля инвестора (d)</p>
-                    <p className="text-4xl font-black mt-2">
-                      {(calculations.investorShareDecimal * 100).toFixed(4)}%
-                    </p>
-                    <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                      В простых дробях: {calculations.shareNum} / {calculations.shareDen}
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-xl shadow-sky-900/5 relative overflow-hidden">
-                    <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none">
-                      <CoinsIcon className="h-24 w-24 text-sky-600" />
-                    </div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Номинал доли инвестора</p>
-                    <p className="text-4xl font-black text-slate-900 mt-2">
-                      {formatCurrency(calculations.nominalValue)} ₽
-                    </p>
-                    <div className="mt-4 text-xs text-slate-500 font-medium">
-                      Копеек без запятых: <span className="font-extrabold text-[#0091ea]">{calculations.nominalKopecks.toLocaleString('ru-RU')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-xl shadow-sky-900/5 space-y-5">
-                  <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <CheckIcon className="h-5 w-5 text-emerald-500" />
-                    Вывод целых долей для документов (ФНС)
-                  </h3>
-                  
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    Чтобы исключить любые споры из-за чисел в периоде при регистрации изменений в ФНС, значения переводятся в копейки (целые неделящиеся числа).
-                  </p>
-
-                  <div className="bg-[#f0f9ff]/50 rounded-2xl p-5 border border-sky-100 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-xs text-slate-500 block mb-1">Номинал доли в копейках (Числитель):</span>
-                        <span className="text-2xl font-mono font-black text-[#0277bd]">
-                          {calculations.nominalKopecks.toLocaleString('ru-RU')}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-500 block mb-1">Новый УК в копейках (Знаменатель):</span>
-                        <span className="text-2xl font-mono font-black text-[#0091ea]">
-                          {calculations.totalCapitalKopecks.toLocaleString('ru-RU')}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-sky-100 pt-4 mt-2">
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div>
-                          <span className="text-xs text-slate-400 block mb-1">Итоговая дробь для договора и ФНС:</span>
-                          <span className="text-xl font-mono font-black text-[#0277bd] bg-white shadow-sm px-4 py-2 rounded-xl border border-sky-100 inline-block">
-                            {calculations.nominalKopecks} / {calculations.totalCapitalKopecks}
-                          </span>
-                        </div>
-                        <div className="text-left sm:text-right text-xs text-slate-500">
-                          <p>Проверочное деление дроби:</p>
-                          <p className="font-mono text-emerald-600 text-sm font-black mt-1">
-                            {(calculations.nominalKopecks / calculations.totalCapitalKopecks * 100).toFixed(6)}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-2xl text-xs space-y-2 border border-slate-100">
-                    <div className="font-bold text-slate-700">Проверка примера (Займ 10м / Выручка 100м / УК 10к):</div>
-                    <div className="grid grid-cols-2 gap-2 text-slate-500">
-                      <div>• Доля: <span className="text-[#0091ea] font-bold">1/20 (5.00%)</span></div>
-                      <div>• Номинал: <span className="text-[#0091ea] font-bold">526 руб. 32 коп.</span></div>
-                      <div>• Новый УК: <span className="text-[#0091ea] font-bold">10 526 руб. 32 коп.</span></div>
-                      <div>• Дробь: <span className="text-[#0091ea] font-bold">52632 / 1052632</span></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-8 bg-blue-600 rounded-3xl text-white shadow-xl">
+              <h3 className="text-lg font-medium text-blue-100 mb-2">Ваш пассивный доход:</h3>
+              <p className="text-5xl font-bold">{passiveIncome.toLocaleString()} ₽</p>
             </div>
-
-            {/* ПОДРОБНЕЙШИЙ ПОШАГОВЫЙ МАТЕМАТИЧЕСКИЙ ПРОТОКОЛ */}
-            <section className="mt-8 bg-white border border-slate-100 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-sky-900/5">
-              <h3 className="text-lg font-extrabold text-slate-900 mb-6 flex items-center gap-2">
-                <FileTextIcon className="h-5 w-5 text-[#0091ea]" />
-                Пошаговый математический протокол расчетов
-              </h3>
-
-              <div className="space-y-8 text-slate-700 text-sm md:text-base font-sans">
-                
-                <div className="border-l-4 border-sky-400 pl-4 space-y-2">
-                  <span className="text-xs uppercase tracking-wider font-extrabold text-sky-600 block">Шаг 1. Расчет базовой доли инвестора (d)</span>
-                  <p className="text-slate-600">
-                    Доля заимодавца в капитале компании рассчитывается по следующей формуле эффективности с учетом инвестиционной скидки:
-                  </p>
-                  
-                  <div className="bg-sky-50/50 p-4 rounded-xl font-mono text-center my-3 overflow-x-auto text-slate-800 border border-sky-100/50">
-                    {"d = "}
-                    <div className="inline-block align-middle text-center mx-2">
-                      <div className="border-b border-slate-300 pb-1 px-2">Сумма займа ({loanAmount} млн ₽)</div>
-                      <div className="pt-1 px-2">Выручка ({revenue} млн ₽) × Мультипликатор ({multiplier}) × (1 - Скидка ({discount}%))</div>
-                    </div>
-                  </div>
-
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    1. Вычисляем знаменатель формулы: <br />
-                    <span className="font-mono bg-slate-100 px-1 rounded">{revenue} млн</span> × <span className="font-mono bg-slate-100 px-1 rounded">{multiplier}</span> × <span className="font-mono bg-slate-100 px-1 rounded">(1 - {discount / 100})</span> = <span className="text-slate-800 font-extrabold font-mono text-sm">{calculations.denominatorValue} млн ₽</span>.
-                  </p>
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    2. Производим деление займа на полученный показатель: <br />
-                    <span className="font-mono bg-slate-100 px-1 rounded">{loanAmount} млн</span> / <span className="font-mono bg-slate-100 px-1 rounded">{calculations.denominatorValue} млн</span> = <span className="text-slate-800 font-extrabold font-mono text-sm">{(calculations.investorShareDecimal).toFixed(6)}</span>.
-                  </p>
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    3. Сокращаем полученное соотношение в простую несократимую дробь: <br />
-                    Итоговая доля инвестора: <span className="text-[#0091ea] font-extrabold font-mono text-sm">{calculations.shareNum} / {calculations.shareDen}</span> (что составляет ровно <span className="text-[#0091ea] font-bold">{(calculations.investorShareDecimal * 100).toFixed(4)}%</span>).
-                  </p>
-                </div>
-
-                <div className="border-l-4 border-blue-500 pl-4 space-y-2">
-                  <span className="text-xs uppercase tracking-wider font-extrabold text-blue-600 block">Шаг 2. Расчет номинальной стоимости доли (N)</span>
-                  <p className="text-slate-600">
-                    Номинальная стоимость создаваемой доли инвестора рассчитывается по формуле сохранения пропорций при увеличении уставного капитала:
-                  </p>
-
-                  <div className="bg-sky-50/50 p-4 rounded-xl font-mono text-center my-3 overflow-x-auto text-slate-800 border border-sky-100/50">
-                    {"N = "}
-                    <div className="inline-block align-middle text-center mx-2">
-                      <div className="border-b border-slate-300 pb-1 px-2">Начальный УК ({initialCapital.toLocaleString('ru-RU')} ₽) × d</div>
-                      <div className="pt-1 px-2">1 - d</div>
-                    </div>
-                  </div>
-
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    Чтобы исключить влияние округлений и «цифр в периоде», подставляем вместо <span className="font-mono">d</span> простую дробь <span className="font-mono">{calculations.shareNum}/{calculations.shareDen}</span>:
-                  </p>
-                  
-                  <div className="bg-slate-50 p-3 rounded-lg font-mono text-xs text-slate-600 overflow-x-auto">
-                    N = {initialCapital} × ({calculations.shareNum}/{calculations.shareDen}) / (1 - {calculations.shareNum}/{calculations.shareDen}) = {initialCapital} × {calculations.shareNum} / ({calculations.shareDen} - {calculations.shareNum})
-                  </div>
-
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    Результат точного расчета: <br />
-                    N = <span className="font-mono">{initialCapital * calculations.shareNum}</span> / <span className="font-mono">{calculations.shareDen - calculations.shareNum}</span> = <span className="text-slate-800 font-extrabold font-mono text-sm">{formatCurrency(calculations.nominalValue)} руб.</span>
-                  </p>
-                </div>
-
-                <div className="border-l-4 border-[#0277bd] pl-4 space-y-2">
-                  <span className="text-xs uppercase tracking-wider font-extrabold text-[#0277bd] block">Шаг 3. Итоговый уставный капитал и перевод в копейки</span>
-                  <p className="text-slate-600">
-                    После конвертации уставный капитал увеличивается на номинальную стоимость доли инвестора:
-                  </p>
-
-                  <div className="bg-sky-50/50 p-4 rounded-xl font-mono text-center my-3 text-slate-800 border border-sky-100/50">
-                    УК_новый = Начальный УК ({initialCapital.toLocaleString('ru-RU')} ₽) + Номинал доли ({formatCurrency(calculations.nominalValue)} ₽) = <span className="text-slate-800 font-black">{formatCurrency(calculations.totalCapitalValue)} ₽</span>
-                  </div>
-
-                  <p className="text-slate-600 mt-4">
-                    Переводим все значения в копейки (целые числа) для исключения любых спорных трактовок при оформлении документов:
-                  </p>
-
-                  <ul className="list-disc list-inside space-y-2 text-slate-500 text-xs">
-                    <li>
-                      Номинал доли инвестора в копейках: <br />
-                      <span className="font-mono bg-slate-100 px-1 rounded">{formatCurrency(calculations.nominalValue)} руб.</span> × <span className="font-mono">100</span> = <span className="text-slate-800 font-extrabold font-mono">{calculations.nominalKopecks.toLocaleString('ru-RU')} копеек</span>.
-                    </li>
-                    <li>
-                      Итоговый уставный капитал в копейках: <br />
-                      <span className="font-mono bg-slate-100 px-1 rounded">{formatCurrency(calculations.totalCapitalValue)} руб.</span> × <span className="font-mono">100</span> = <span className="text-slate-800 font-extrabold font-mono">{calculations.totalCapitalKopecks.toLocaleString('ru-RU')} копеек</span>.
-                    </li>
-                    <li>
-                      Соотношение долей для ФНС: <br />
-                      Отношение номинала доли инвестора к новому УК составляет: <span className="text-[#0277bd] font-black font-mono text-sm">{calculations.nominalKopecks} / {calculations.totalCapitalKopecks}</span>.
-                    </li>
-                  </ul>
-                  
-                  <p className="text-slate-500 text-xs italic bg-amber-50 border border-amber-100 p-3.5 rounded-2xl leading-relaxed">
-                    Данное соотношение абсолютно точно и не содержит дробных долей копейки, что делает его на 100% юридически безупречным при подаче в регистрирующий орган (ФНС).
-                  </p>
-                </div>
-
-              </div>
-            </section>
-
+            <div className="p-8 bg-slate-100 rounded-3xl border border-slate-200">
+              <h3 className="text-lg font-medium text-slate-600 mb-2">Гарантированный процент:</h3>
+              <p className="text-5xl font-bold text-slate-900">33.0% годовых</p>
+            </div>
           </div>
         </div>
-      );
-    }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
-</body>
-</html>
+        {/* Блок прогноза выручки */}
+        <div className="bg-white p-10 rounded-3xl shadow-lg border border-slate-200">
+          <h2 className="text-2xl font-bold mb-10">Прогноз выручки по месяцам (млн ₽)</h2>
+          
+          <div className="flex items-end justify-between h-64 gap-3">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center flex-1 group">
+                <div 
+                  className={`w-full rounded-t-xl transition-all duration-500 ${i === 11 ? 'bg-blue-600 shadow-lg' : 'bg-blue-200'}`}
+                  style={{ height: `${(i + 1) * 7 + 15}%` }}
+                />
+                <span className="text-sm mt-4 font-bold text-slate-400 group-hover:text-blue-600">M{i + 1}</span>
+              </div>
+            ))}
+          </div>
 
-```
+          <div className="mt-12 pt-8 border-t border-slate-200 flex justify-between items-center">
+            <div>
+              <p className="text-base text-slate-500">Выбранный период:</p>
+              <p className="text-xl font-bold mt-1">12-й Месяц развития (май-июнь 2026)</p>
+            </div>
+            <div className="text-right">
+              <p className="text-base text-slate-500">Плановая выручка:</p>
+              <p className="text-4xl font-black text-blue-600 mt-1">{revenueM12.toLocaleString()} ₽</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
